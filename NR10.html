@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Jogo NR-10 - Treinamento</title>
+<style>
+    body {
+        background-color: #f0f0f0;
+        font-family: Arial;
+        margin: 0;
+        padding: 0;
+    }
+    .container {
+        max-width: 700px;
+        background-color: white;
+        margin: 50px auto;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        text-align: center;
+    }
+    h1 {
+        color: #007bff;
+    }
+    img {
+        width: 100%;
+        max-height: 250px;
+        object-fit: cover;
+        border-radius: 10px;
+        margin-bottom: 15px;
+    }
+    .question {
+        font-size: 1.2em;
+        margin-bottom: 20px;
+    }
+    .options button {
+        display: block;
+        width: 100%;
+        margin: 8px 0;
+        padding: 10px;
+        font-size: 1em;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    .options button:hover {
+        background-color: #0056b3;
+    }
+    .feedback {
+        margin-top: 20px;
+        font-weight: bold;
+        min-height: 20px;
+    }
+    .result {
+        margin-top: 20px;
+        font-size: 1.2em;
+    }
+    .start-btn {
+        background-color: #28a745;
+    }
+    .start-btn:hover {
+        background-color: #1e7e34;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Jogo NR-10 - Identificação de Riscos</h1>
+    <img id="questionImage" src="imagens/painel.png" alt="Imagem do cenário">
+    <div id="game">
+        <div id="questionContainer">
+            <div class="question" id="question"></div>
+            <div class="options" id="options"></div>
+            <div class="feedback" id="feedback"></div>
+        </div>
+        <div class="result" id="result"></div>
+    </div>
+</div>
+
+<!-- Sons -->
+<audio id="somAcerto" src="sons/acerto.mp3"></audio>
+<audio id="somErro" src="sons/erro.mp3"></audio>
+
+<script>
+const questions = [
+    {
+        image: "imagens/painel.png",
+        question: "Você encontra um painel elétrico sem sinalização e com fios desencapados. O que deve fazer?",
+        options: [
+            "Ignorar e seguir com o serviço.",
+            "Sinalizar, desligar e bloquear o painel.",
+            "Ligar o painel para testar se funciona."
+        ],
+        answer: 1
+    },
+    {
+        image: "imagens/risco.png",
+        question: "Antes de trabalhar em um circuito elétrico, qual procedimento é correto?",
+        options: [
+            "Apenas usar luvas isolantes.",
+            "Testar ausência de tensão, bloquear e sinalizar.",
+            "Confiar que está desligado e começar o serviço."
+        ],
+        answer: 1
+    },
+    {
+        image: "imagens/correto.png",
+        question: "O que significa LOTO (Lock Out - Tag Out)?",
+        options: [
+            "Um tipo de ferramenta isolada.",
+            "Procedimento de bloqueio e etiquetagem para segurança.",
+            "Manual de operação de máquinas elétricas."
+        ],
+        answer: 1
+    },
+    {
+        image: "imagens/erro.png",
+        question: "Se notar que outro colaborador está sem EPI no setor elétrico, o que fazer?",
+        options: [
+            "Ignorar, não é sua responsabilidade.",
+            "Orientar, sinalizar e comunicar ao responsável.",
+            "Filmar e postar nas redes sociais."
+        ],
+        answer: 1
+    },
+    {
+        image: "imagens/correto.png",
+        question: "Quais EPIs são obrigatórios no trabalho em eletricidade?",
+        options: [
+            "Luva isolante, viseira, capacete, roupas e calçado isolante.",
+            "Somente luvas de couro.",
+            "Nenhum, se estiver em dia com o treinamento."
+        ],
+        answer: 0
+    }
+];
+
+let currentQuestion = 0;
+let score = 0;
+
+const somAcerto = document.getElementById('somAcerto');
+const somErro = document.getElementById('somErro');
+
+function showQuestion() {
+    const q = questions[currentQuestion];
+    document.getElementById("question").innerText = q.question;
+    document.getElementById("questionImage").src = q.image;
+    const optionsDiv = document.getElementById("options");
+    optionsDiv.innerHTML = '';
+    document.getElementById("feedback").innerText = '';
+    
+    q.options.forEach((opt, index) => {
+        const btn = document.createElement("button");
+        btn.innerText = opt;
+        btn.onclick = () => checkAnswer(index);
+        optionsDiv.appendChild(btn);
+    });
+}
+
+function checkAnswer(selected) {
+    const q = questions[currentQuestion];
+    const feedback = document.getElementById("feedback");
+
+    if(selected === q.answer){
+        feedback.style.color = "green";
+        feedback.innerText = "✔ Correto! Procedimento seguro.";
+        somAcerto.play();
+        score++;
+    } else {
+        feedback.style.color = "red";
+        feedback.innerText = "❌ Incorreto! Isso coloca sua segurança em risco.";
+        somErro.play();
+    }
+
+    setTimeout(() => {
+        currentQuestion++;
+        if(currentQuestion < questions.length){
+            showQuestion();
+        } else {
+            showResult();
+        }
+    }, 2000);
+}
+
+function showResult() {
+    document.getElementById("questionContainer").style.display = "none";
+    document.getElementById("questionImage").style.display = "none";
+    const result = document.getElementById("result");
+    result.innerHTML = `
+        <p>🏆 Você acertou ${score} de ${questions.length} questões.</p>
+        ${score >= 4 ? "<p>✅ Parabéns! Você demonstrou estar preparado.</p>" : "<p>⚠ Atenção! É necessário revisar mais sobre segurança elétrica.</p>"}
+        <button class="start-btn" onclick="restart()">Recomeçar</button>
+    `;
+}
+
+function restart() {
+    currentQuestion = 0;
+    score = 0;
+    document.getElementById("questionContainer").style.display = "block";
+    document.getElementById("questionImage").style.display = "block";
+    document.getElementById("result").innerHTML = '';
+    showQuestion();
+}
+
+// Inicializar
+showQuestion();
+</script>
+
+</body>
+</html>
+
+
+---
